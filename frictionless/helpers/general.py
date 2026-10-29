@@ -188,7 +188,8 @@ def write_file(path: str, body: Any, *, mode: str = "wt"):
 def is_remote_path(path: str) -> bool:
     path = path[0] if path and isinstance(path, list) else path
     scheme = urlparse(path).scheme
-    if not scheme:
+    # Match parse_scheme_and_format: a single-letter scheme is a Windows drive.
+    if len(scheme) < 2:
         return False
     if path.lower().startswith(scheme + ":\\"):
         return False

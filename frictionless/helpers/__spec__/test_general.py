@@ -7,6 +7,31 @@ from frictionless import helpers, platform
 # General
 
 
+@pytest.mark.parametrize(
+    "path,is_remote",
+    (
+        ("C:/data", False),
+        ("c:/data/table.csv", False),
+        ("Z:/", False),
+        ("C:\\data", False),
+        ("C:data", False),
+        ("data/table.csv", False),
+        ("/data/table.csv", False),
+        ("", False),
+        ("https://example.com/data", True),
+        ("s3://bucket/data", True),
+        ("file:///data/table.csv", True),
+        ("custom:\\data", False),
+        (["C:/data/table.csv"], False),
+        (["C:\\data\\table.csv"], False),
+        (["data/table.csv"], False),
+        (["https://example.com/data"], True),
+    ),
+)
+def test_is_remote_path(path, is_remote):
+    assert helpers.is_remote_path(path) is is_remote
+
+
 def test_ensure_dir(tmpdir):
     dir_path = os.path.join(tmpdir, "dir")
     file_path = os.path.join(dir_path, "file")

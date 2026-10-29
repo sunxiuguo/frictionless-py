@@ -49,6 +49,26 @@ def test_resource_infer_from_path():
     assert resource.path == "data/table.csv"
 
 
+def test_resource_infer_basepath_with_forward_slash_drive(tmp_path, monkeypatch):
+    basepath = tmp_path.as_posix()
+    if not tmp_path.drive:
+        # Exercise drive-path routing on POSIX using a synthetic local directory.
+        monkeypatch.chdir(tmp_path)
+        basepath = "C:/data"
+        (tmp_path / basepath).mkdir(parents=True)
+    (tmp_path / basepath / "table.csv").write_text("x,y\n1,2\n", encoding="utf-8")
+
+    resource = Resource(path="table.csv", basepath=basepath)
+    resource.infer(stats=True)
+
+    assert resource.scheme == "file"
+    assert resource.schema.to_descriptor() == {
+        "fields": [{"name": "x", "type": "integer"}, {"name": "y", "type": "integer"}]
+    }
+    assert resource.stats.rows == 1
+    assert resource.read_rows() == [{"x": 1, "y": 2}]
+
+
 # Bugs
 
 
